@@ -1,0 +1,8 @@
+[package]
+name = "myvyds_site"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = { version = "0.8.9", features = ["http2"] }
+tokio = { version = "1.54.1", features = ["full"] }
