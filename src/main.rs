@@ -1,21 +1,68 @@
 use std::{
+    fs,
     ops::Deref,
+    path::PathBuf,
+    str::FromStr,
     sync::{LazyLock, Mutex},
 };
 
-use axum::{Router, response::IntoResponse, routing::get};
+use axum::{
+    Router,
+    http::{Response, StatusCode, header::CONTENT_TYPE},
+    response::IntoResponse,
+    routing::get,
+};
 use tokio::net::TcpListener;
+
+use serde::Serialize;
 
 mod misc;
 
 use crate::misc::collections::*;
 
+#[derive(Serialize)]
+struct TextResponse {
+    message: String,
+}
+
+impl IntoResponse for TextResponse {
+    fn into_response(self) -> axum::response::Response {
+        (StatusCode::OK, self.message).into_response()
+    }
+}
+
 async fn index() -> impl IntoResponse {
-    "Hello, world!"
+    let contents: TextResponse = TextResponse {
+        message: get_webpage("index.html").unwrap(),
+    };
+
+    let mut res = axum::response::IntoResponse::into_response(contents);
+    res.headers_mut()
+        .insert(CONTENT_TYPE, "text/html".parse().unwrap());
+
+    (StatusCode::OK, res)
+}
+
+fn get_local_file(relative_path: &str) -> Result<String, std::io::Error> {
+    let absolute_canon_path: PathBuf = match std::fs::canonicalize(format!("./{relative_path}")) {
+        Ok(val) => val,
+        Err(e) => return Err(e),
+    };
+    let contents: String = match fs::read_to_string(absolute_canon_path) {
+        Ok(val) => val,
+        Err(e) => return Err(e),
+    };
+    Ok(contents)
+}
+
+fn get_webpage(webpage_file_name: &str) -> Result<String, std::io::Error> {
+    get_local_file(format!("webpages/html/{webpage_file_name}").as_str())
 }
 
 async fn get_router() -> Router {
-    Router::new().route("/index.html", get(index))
+    Router::new()
+        .route("/index.html", get(index))
+        .route("/", get(index))
 }
 
 static HTTP_PORT_ARC: LazyLock<Mutex<MutableBox<u64>>> =
