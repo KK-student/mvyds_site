@@ -47,6 +47,7 @@ async fn index() -> impl IntoResponse {
 async fn get_script_endpoint(
     axum::extract::Path(name): axum::extract::Path<String>,
 ) -> impl IntoResponse {
+    println!("Called get_script_endpoint!");
     let contents: TextResponse = TextResponse {
         message: match get_script(name.as_str()) {
             Ok(val) => val,
@@ -89,14 +90,25 @@ fn get_webpage(webpage_file_name: &str) -> Result<String, std::io::Error> {
 }
 
 fn get_script(script_file_name: &str) -> Result<String, std::io::Error> {
+    println!("Getting script file: \"webpages/js/{script_file_name}\"");
+    {
+        let full_path_res = std::fs::canonicalize(format!("webpages/js/{script_file_name}"));
+        match &full_path_res {
+            Ok(val) => println!(
+                "Full script file path: \"{}\"",
+                full_path_res.unwrap().display()
+            ),
+            Err(_) => {}
+        }
+    }
     get_local_file(format!("webpages/js/{script_file_name}").as_str())
 }
 
 async fn get_router() -> Router {
     Router::new()
+        .route("/js/{*name}", get(get_script_endpoint))
         .route("/index.html", get(index))
         .route("/", get(index))
-        .route("/js/{name}", get(get_script_endpoint))
 }
 
 static HTTP_PORT_ARC: LazyLock<Mutex<MutableBox<u64>>> =
