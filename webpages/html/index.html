@@ -2,9 +2,38 @@
 <html>
   <head>
     <title>Myvyds homepage</title>
+    <!-- <script type="module"> import react from 'https://cdn.jsdelivr.net/npm/react@19.3.1/+esm' </script> -->
+    <!-- <script type="module"> import reactDom from 'https://cdn.jsdelivr.net/npm/react-dom@19.3.1/+esm' </script> -->
   </head>
 
   <body>
-    <h1>Hello World!</h1>
+    <!-- React scripts: -->
+    <!-- <script src="./js/react.production-19.3.1.min.js" type="module"></script> -->
+    <!-- <script src="./js/react-dom.production-19.3.1.min.js" type="module"></script> -->
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/react@19/cjs/react.production.min.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/react-dom@19/index.min.js"></script> -->
+
+    <!-- Main body: -->
+    <div id="root"></div>
+
+    <!-- Working with React: -->
+    <!-- <script type="module"> -->
+    <!--   let React = require("./js/react.production-19.3.1.min.js"); -->
+    <!--   let ReactDOM = require("./js/react-dom.production-19.3.1.min.js"); -->
+    <!--   const element = React.createElement("h1", {}, "Hello world from React!"); -->
+    <!--   ReactDOM.createRoot(document.getElementById("root")).render(elment); -->
+    <!-- </script> -->
+
+    <script type="module">
+      import React from "https://esm.sh/react@19/?dev";
+      /* import ReactDOMClient from "https://esm.sh/react-dom@19/client?dev"; */
+      import * as ReactDOM from "https://esm.sh/react-dom@19/client?dev";
+      // console.log(ReactDOMClient);
+
+      const element = React.createElement("h1", {}, "Hello world from React!");
+      //console.log(element);
+      ReactDOM.createRoot(document.getElementById("root")).render(element);
+    </script>
   </body>
 </html>

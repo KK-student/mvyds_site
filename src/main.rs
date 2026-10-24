@@ -8,6 +8,7 @@ use std::{
 
 use axum::{
     Router,
+    body::Body,
     http::{Response, StatusCode, header::CONTENT_TYPE},
     response::IntoResponse,
     routing::get,
@@ -43,6 +44,34 @@ async fn index() -> impl IntoResponse {
     (StatusCode::OK, res)
 }
 
+async fn get_script_endpoint(
+    axum::extract::Path(name): axum::extract::Path<String>,
+) -> impl IntoResponse {
+    let contents: TextResponse = TextResponse {
+        message: match get_script(name.as_str()) {
+            Ok(val) => val,
+            Err(_) => return error_response(StatusCode::NOT_FOUND),
+        },
+    };
+
+    let mut res = axum::response::IntoResponse::into_response(contents);
+    res.headers_mut()
+        .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
+
+    (StatusCode::OK, res)
+}
+
+fn error_response(code: StatusCode) -> (StatusCode, Response<Body>) {
+    let contents = TextResponse {
+        message: "Oops! We messed up!".to_string(),
+    };
+    let mut res = axum::response::IntoResponse::into_response(contents);
+    res.headers_mut()
+        .insert(CONTENT_TYPE, "text/html".parse().unwrap());
+
+    (code, res)
+}
+
 fn get_local_file(relative_path: &str) -> Result<String, std::io::Error> {
     let absolute_canon_path: PathBuf = match std::fs::canonicalize(format!("./{relative_path}")) {
         Ok(val) => val,
@@ -59,10 +88,15 @@ fn get_webpage(webpage_file_name: &str) -> Result<String, std::io::Error> {
     get_local_file(format!("webpages/html/{webpage_file_name}").as_str())
 }
 
+fn get_script(script_file_name: &str) -> Result<String, std::io::Error> {
+    get_local_file(format!("webpages/js/{script_file_name}").as_str())
+}
+
 async fn get_router() -> Router {
     Router::new()
         .route("/index.html", get(index))
         .route("/", get(index))
+        .route("/js/{name}", get(get_script_endpoint))
 }
 
 static HTTP_PORT_ARC: LazyLock<Mutex<MutableBox<u64>>> =
