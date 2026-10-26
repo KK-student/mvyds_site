@@ -1,4 +1,5 @@
 use std::{
+    error::Error,
     fs,
     ops::Deref,
     path::PathBuf,
@@ -32,6 +33,17 @@ impl IntoResponse for TextResponse {
     }
 }
 
+#[derive(Serialize)]
+struct BinaryResponse {
+    message: Vec<u8>,
+}
+
+impl IntoResponse for BinaryResponse {
+    fn into_response(self) -> axum::response::Response {
+        (StatusCode::OK, self.message).into_response()
+    }
+}
+
 async fn index() -> impl IntoResponse {
     let contents: TextResponse = TextResponse {
         message: get_webpage("index.html").unwrap(),
@@ -51,7 +63,7 @@ async fn get_script_endpoint(
     let contents: TextResponse = TextResponse {
         message: match get_script(name.as_str()) {
             Ok(val) => val,
-            Err(_) => return error_response(StatusCode::NOT_FOUND),
+            Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
         },
     };
 
@@ -62,9 +74,9 @@ async fn get_script_endpoint(
     (StatusCode::OK, res)
 }
 
-fn error_response(code: StatusCode) -> (StatusCode, Response<Body>) {
+fn error_response(code: StatusCode, error_message: &str) -> (StatusCode, Response<Body>) {
     let contents = TextResponse {
-        message: "Oops! We messed up!".to_string(),
+        message: format!("Error src/main.rs/{{fn error_response}}: {error_message}"),
     };
     let mut res = axum::response::IntoResponse::into_response(contents);
     res.headers_mut()
@@ -79,6 +91,18 @@ fn get_local_file(relative_path: &str) -> Result<String, std::io::Error> {
         Err(e) => return Err(e),
     };
     let contents: String = match fs::read_to_string(absolute_canon_path) {
+        Ok(val) => val,
+        Err(e) => return Err(e),
+    };
+    Ok(contents)
+}
+
+fn get_local_binary_file(relative_path: &str) -> Result<Vec<u8>, std::io::Error> {
+    let absolute_canon_path: PathBuf = match std::fs::canonicalize(format!("./{relative_path}")) {
+        Ok(val) => val,
+        Err(e) => return Err(e),
+    };
+    let contents: Vec<u8> = match fs::read(absolute_canon_path) {
         Ok(val) => val,
         Err(e) => return Err(e),
     };
@@ -104,9 +128,51 @@ fn get_script(script_file_name: &str) -> Result<String, std::io::Error> {
     get_local_file(format!("webpages/js/{script_file_name}").as_str())
 }
 
+fn get_image(image_file_name: &str) -> Result<Vec<u8>, std::io::Error> {
+    let image_file: String = format!("webpages/img/{image_file_name}");
+    println!("Getting image file: \"{image_file}\". ");
+    get_local_binary_file(image_file.as_str())
+}
+
+async fn get_image_endpoint(
+    axum::extract::Path(name): axum::extract::Path<String>,
+) -> impl IntoResponse {
+    println!("Called get_image_endpoint!");
+    let contents: BinaryResponse = BinaryResponse {
+        message: match get_image(name.as_str()) {
+            Ok(val) => val,
+            Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
+        },
+    };
+
+    let res = axum::response::IntoResponse::into_response(contents);
+    // res.headers_mut()
+    //     .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
+
+    (StatusCode::OK, res)
+}
+
+async fn get_favicon() -> impl IntoResponse {
+    println!("Called get_favicon!");
+    let contents: BinaryResponse = BinaryResponse {
+        message: match get_image("favicon.ico") {
+            Ok(val) => val,
+            Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
+        },
+    };
+
+    let res = axum::response::IntoResponse::into_response(contents);
+    // res.headers_mut()
+    //     .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
+
+    (StatusCode::OK, res)
+}
+
 async fn get_router() -> Router {
     Router::new()
         .route("/js/{*name}", get(get_script_endpoint))
+        .route("/img/{*name}", get(get_image_endpoint))
+        .route("/favicon.ico", get(get_favicon))
         .route("/index.html", get(index))
         .route("/", get(index))
 }
