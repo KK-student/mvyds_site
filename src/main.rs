@@ -45,8 +45,11 @@ impl IntoResponse for BinaryResponse {
 }
 
 async fn index() -> impl IntoResponse {
-    let contents: TextResponse = TextResponse {
-        message: get_webpage("index.html").unwrap(),
+    // let contents: TextResponse = TextResponse {
+    //     message: get_webpage("index.html").unwrap(),
+    // };
+    let contents: BinaryResponse = BinaryResponse {
+        message: get_web_file("index.html").unwrap(),
     };
 
     let mut res = axum::response::IntoResponse::into_response(contents);
@@ -56,23 +59,23 @@ async fn index() -> impl IntoResponse {
     (StatusCode::OK, res)
 }
 
-async fn get_script_endpoint(
-    axum::extract::Path(name): axum::extract::Path<String>,
-) -> impl IntoResponse {
-    println!("Called get_script_endpoint!");
-    let contents: TextResponse = TextResponse {
-        message: match get_script(name.as_str()) {
-            Ok(val) => val,
-            Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
-        },
-    };
+// async fn get_script_endpoint(
+//     axum::extract::Path(name): axum::extract::Path<String>,
+// ) -> impl IntoResponse {
+//     println!("Called get_script_endpoint!");
+//     let contents: TextResponse = TextResponse {
+//         message: match get_script(name.as_str()) {
+//             Ok(val) => val,
+//             Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
+//         },
+//     };
 
-    let mut res = axum::response::IntoResponse::into_response(contents);
-    res.headers_mut()
-        .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
+//     let mut res = axum::response::IntoResponse::into_response(contents);
+//     res.headers_mut()
+//         .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
 
-    (StatusCode::OK, res)
-}
+//     (StatusCode::OK, res)
+// }
 
 fn error_response(code: StatusCode, error_message: &str) -> (StatusCode, Response<Body>) {
     let contents = TextResponse {
@@ -85,17 +88,17 @@ fn error_response(code: StatusCode, error_message: &str) -> (StatusCode, Respons
     (code, res)
 }
 
-fn get_local_file(relative_path: &str) -> Result<String, std::io::Error> {
-    let absolute_canon_path: PathBuf = match std::fs::canonicalize(format!("./{relative_path}")) {
-        Ok(val) => val,
-        Err(e) => return Err(e),
-    };
-    let contents: String = match fs::read_to_string(absolute_canon_path) {
-        Ok(val) => val,
-        Err(e) => return Err(e),
-    };
-    Ok(contents)
-}
+// fn get_local_file(relative_path: &str) -> Result<String, std::io::Error> {
+//     let absolute_canon_path: PathBuf = match std::fs::canonicalize(format!("./{relative_path}")) {
+//         Ok(val) => val,
+//         Err(e) => return Err(e),
+//     };
+//     let contents: String = match fs::read_to_string(absolute_canon_path) {
+//         Ok(val) => val,
+//         Err(e) => return Err(e),
+//     };
+//     Ok(contents)
+// }
 
 fn get_local_binary_file(relative_path: &str) -> Result<Vec<u8>, std::io::Error> {
     let absolute_canon_path: PathBuf = match std::fs::canonicalize(format!("./{relative_path}")) {
@@ -109,70 +112,74 @@ fn get_local_binary_file(relative_path: &str) -> Result<Vec<u8>, std::io::Error>
     Ok(contents)
 }
 
-fn get_webpage(webpage_file_name: &str) -> Result<String, std::io::Error> {
-    get_local_file(format!("webpages/html/{webpage_file_name}").as_str())
+fn get_web_file(relative_path: &str) -> Result<Vec<u8>, std::io::Error> {
+    get_local_binary_file(format!("./webpages/{relative_path}").as_str())
 }
 
-fn get_script(script_file_name: &str) -> Result<String, std::io::Error> {
-    println!("Getting script file: \"webpages/js/{script_file_name}\"");
-    {
-        let full_path_res = std::fs::canonicalize(format!("webpages/js/{script_file_name}"));
-        match &full_path_res {
-            Ok(val) => println!(
-                "Full script file path: \"{}\"",
-                full_path_res.unwrap().display()
-            ),
-            Err(_) => {}
-        }
-    }
-    get_local_file(format!("webpages/js/{script_file_name}").as_str())
-}
+// fn get_webpage(webpage_file_name: &str) -> Result<String, std::io::Error> {
+//     get_local_file(format!("webpages/html/{webpage_file_name}").as_str())
+// }
 
-fn get_image(image_file_name: &str) -> Result<Vec<u8>, std::io::Error> {
-    let image_file: String = format!("webpages/img/{image_file_name}");
-    println!("Getting image file: \"{image_file}\". ");
-    get_local_binary_file(image_file.as_str())
-}
+// fn get_script(script_file_name: &str) -> Result<String, std::io::Error> {
+//     println!("Getting script file: \"webpages/js/{script_file_name}\"");
+//     {
+//         let full_path_res = std::fs::canonicalize(format!("webpages/js/{script_file_name}"));
+//         match &full_path_res {
+//             Ok(val) => println!(
+//                 "Full script file path: \"{}\"",
+//                 full_path_res.unwrap().display()
+//             ),
+//             Err(_) => {}
+//         }
+//     }
+//     get_local_file(format!("webpages/js/{script_file_name}").as_str())
+// }
 
-async fn get_image_endpoint(
-    axum::extract::Path(name): axum::extract::Path<String>,
-) -> impl IntoResponse {
-    println!("Called get_image_endpoint!");
-    let contents: BinaryResponse = BinaryResponse {
-        message: match get_image(name.as_str()) {
-            Ok(val) => val,
-            Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
-        },
-    };
+// fn get_image(image_file_name: &str) -> Result<Vec<u8>, std::io::Error> {
+//     let image_file: String = format!("webpages/img/{image_file_name}");
+//     println!("Getting image file: \"{image_file}\". ");
+//     get_local_binary_file(image_file.as_str())
+// }
 
-    let res = axum::response::IntoResponse::into_response(contents);
-    // res.headers_mut()
-    //     .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
+// async fn get_image_endpoint(
+//     axum::extract::Path(name): axum::extract::Path<String>,
+// ) -> impl IntoResponse {
+//     println!("Called get_image_endpoint!");
+//     let contents: BinaryResponse = BinaryResponse {
+//         message: match get_image(name.as_str()) {
+//             Ok(val) => val,
+//             Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
+//         },
+//     };
 
-    (StatusCode::OK, res)
-}
+//     let res = axum::response::IntoResponse::into_response(contents);
+//     // res.headers_mut()
+//     //     .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
 
-async fn get_favicon() -> impl IntoResponse {
-    println!("Called get_favicon!");
-    let contents: BinaryResponse = BinaryResponse {
-        message: match get_image("favicon.ico") {
-            Ok(val) => val,
-            Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
-        },
-    };
+//     (StatusCode::OK, res)
+// }
 
-    let res = axum::response::IntoResponse::into_response(contents);
-    // res.headers_mut()
-    //     .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
+// async fn get_favicon() -> impl IntoResponse {
+//     println!("Called get_favicon!");
+//     let contents: BinaryResponse = BinaryResponse {
+//         message: match get_image("favicon.ico") {
+//             Ok(val) => val,
+//             Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
+//         },
+//     };
 
-    (StatusCode::OK, res)
-}
+//     let res = axum::response::IntoResponse::into_response(contents);
+//     // res.headers_mut()
+//     //     .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
+
+//     (StatusCode::OK, res)
+// }
 
 async fn get_router() -> Router {
     Router::new()
-        .route("/js/{*name}", get(get_script_endpoint))
-        .route("/img/{*name}", get(get_image_endpoint))
-        .route("/favicon.ico", get(get_favicon))
+        // .route("/js/{*name}", get(get_script_endpoint))
+        // .route("/img/{*name}", get(get_image_endpoint))
+        // .route("/favicon.ico", get(get_favicon))
         .route("/index.html", get(index))
         .route("/", get(index))
 }

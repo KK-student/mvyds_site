@@ -1,5 +1,0 @@
-/* esm.sh - scheduler@0.28.0 */
-// export * from "/scheduler@0.28.0/es2022/scheduler.mjs";
-export * from "./es2022/scheduler.mjs";
-// export { default } from "/scheduler@0.28.0/es2022/scheduler.mjs";
-export { default } from "./es2022/scheduler.mjs";
