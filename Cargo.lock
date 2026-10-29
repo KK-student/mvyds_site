@@ -310,6 +310,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
+name = "mimetype-detector"
+version = "0.3.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e4fc4acc63dc55c62fb8531c8cc422705f3a587132a1d3de1ded7c4c2964029"
+
+[[package]]
 name = "mio"
 version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -325,6 +331,7 @@ name = "myvyds_site"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "mimetype-detector",
  "serde",
  "serde_json",
  "tokio",

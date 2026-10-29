@@ -14,6 +14,7 @@ use axum::{
     response::IntoResponse,
     routing::get,
 };
+use mimetype_detector::detect;
 use tokio::net::TcpListener;
 
 use serde::Serialize;
@@ -105,6 +106,7 @@ fn get_local_binary_file(relative_path: &str) -> Result<Vec<u8>, std::io::Error>
         Ok(val) => val,
         Err(e) => return Err(e),
     };
+    println!("Reading from file: {}", absolute_canon_path.display());
     let contents: Vec<u8> = match fs::read(absolute_canon_path) {
         Ok(val) => val,
         Err(e) => return Err(e),
@@ -115,6 +117,45 @@ fn get_local_binary_file(relative_path: &str) -> Result<Vec<u8>, std::io::Error>
 fn get_web_file(relative_path: &str) -> Result<Vec<u8>, std::io::Error> {
     get_local_binary_file(format!("./webpages/{relative_path}").as_str())
 }
+
+async fn get_file_endpoint(
+    axum::extract::Path(name): axum::extract::Path<String>,
+) -> impl IntoResponse {
+    let data: Vec<u8> = match get_web_file(name.as_str()) {
+        Ok(val) => val,
+        Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
+    };
+    let mime_type: String = get_data_mime_type(&data);
+    let contents_response: BinaryResponse = BinaryResponse { message: data };
+
+    let mut res = axum::response::IntoResponse::into_response(contents_response);
+    res.headers_mut()
+        .insert(CONTENT_TYPE, mime_type.parse().unwrap());
+
+    (StatusCode::OK, res)
+}
+
+fn get_data_mime_type(data: &Vec<u8>) -> String {
+    detect(data.as_slice()).to_string()
+}
+
+// async fn get_image_endpoint(
+//     axum::extract::Path(name): axum::extract::Path<String>,
+// ) -> impl IntoResponse {
+//     println!("Called get_image_endpoint!");
+//     let contents: BinaryResponse = BinaryResponse {
+//         message: match get_image(name.as_str()) {
+//             Ok(val) => val,
+//             Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
+//         },
+//     };
+
+//     let res = axum::response::IntoResponse::into_response(contents);
+//     // res.headers_mut()
+//     //     .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
+
+//     (StatusCode::OK, res)
+// }
 
 // fn get_webpage(webpage_file_name: &str) -> Result<String, std::io::Error> {
 //     get_local_file(format!("webpages/html/{webpage_file_name}").as_str())
@@ -141,24 +182,6 @@ fn get_web_file(relative_path: &str) -> Result<Vec<u8>, std::io::Error> {
 //     get_local_binary_file(image_file.as_str())
 // }
 
-// async fn get_image_endpoint(
-//     axum::extract::Path(name): axum::extract::Path<String>,
-// ) -> impl IntoResponse {
-//     println!("Called get_image_endpoint!");
-//     let contents: BinaryResponse = BinaryResponse {
-//         message: match get_image(name.as_str()) {
-//             Ok(val) => val,
-//             Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
-//         },
-//     };
-
-//     let res = axum::response::IntoResponse::into_response(contents);
-//     // res.headers_mut()
-//     //     .insert(CONTENT_TYPE, "text/javascript".parse().unwrap());
-
-//     (StatusCode::OK, res)
-// }
-
 // async fn get_favicon() -> impl IntoResponse {
 //     println!("Called get_favicon!");
 //     let contents: BinaryResponse = BinaryResponse {
@@ -180,8 +203,9 @@ async fn get_router() -> Router {
         // .route("/js/{*name}", get(get_script_endpoint))
         // .route("/img/{*name}", get(get_image_endpoint))
         // .route("/favicon.ico", get(get_favicon))
-        .route("/index.html", get(index))
+        // .route("/index.html", get(index))
         .route("/", get(index))
+        .route("/{*path}", get(get_file_endpoint))
 }
 
 static HTTP_PORT_ARC: LazyLock<Mutex<MutableBox<u64>>> =
