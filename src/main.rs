@@ -2,7 +2,7 @@ use std::{
     error::Error,
     fs,
     ops::Deref,
-    path::PathBuf,
+    path::{Path, PathBuf},
     str::FromStr,
     sync::{LazyLock, Mutex},
 };
@@ -10,6 +10,7 @@ use std::{
 use axum::{
     Router,
     body::Body,
+    extract::OptionalFromRequest,
     http::{Response, StatusCode, header::CONTENT_TYPE},
     response::IntoResponse,
     routing::get,
@@ -125,7 +126,16 @@ async fn get_file_endpoint(
         Ok(val) => val,
         Err(e) => return error_response(StatusCode::NOT_FOUND, e.to_string().as_str()),
     };
-    let mime_type: String = get_data_mime_type(&data);
+    let mime_type: String = get_data_mime_type(&data, {
+        let filep = Path::new(name.as_str());
+        match filep.extension() {
+            Some(e_val) => match e_val.to_str() {
+                Some(val) => Some(val.to_string()),
+                None => None,
+            },
+            None => None,
+        }
+    });
     let contents_response: BinaryResponse = BinaryResponse { message: data };
 
     let mut res = axum::response::IntoResponse::into_response(contents_response);
@@ -135,8 +145,15 @@ async fn get_file_endpoint(
     (StatusCode::OK, res)
 }
 
-fn get_data_mime_type(data: &Vec<u8>) -> String {
-    detect(data.as_slice()).to_string()
+fn get_data_mime_type(data: &Vec<u8>, file_extension: Option<String>) -> String {
+    let unknown_detect = |d: &Vec<u8>| -> String { detect(d.as_slice()).to_string() };
+    match file_extension {
+        Some(ext) => match ext.to_lowercase().as_str() {
+            "css" => "text/css".to_string(),
+            _ => unknown_detect(data),
+        },
+        None => unknown_detect(data),
+    }
 }
 
 // async fn get_image_endpoint(
