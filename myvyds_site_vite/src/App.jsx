@@ -1,9 +1,17 @@
-import './App.css'
+import Header from './components/Header.jsx';
+import Footer from './components/Footer.jsx';
+import Searchbar from './components/Searchbar.jsx';
+import AISlowDownLink from './components/AISlowDownLink.jsx';
+
+import './App.css';
 
 function App() {
   return (
     <>
-      <h1>Hello World from React!</h1>
+      <Header />
+      <AISlowDownLink />
+      <Searchbar />
+      <Footer />
     </>
   );
 }

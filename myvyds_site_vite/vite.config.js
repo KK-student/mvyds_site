@@ -7,5 +7,10 @@ export default defineConfig({
   build: {
     outDir: 'build', // Specify the output directory
     sourcemap: true, // Generate source maps for debugging
+
+    rollupOptions: {
+      main: 'index.html',
+      sample_story: 'sample_story.html'
+    }
   },
 })
