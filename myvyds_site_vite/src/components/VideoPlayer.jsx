@@ -38,7 +38,7 @@ export default function VideoPlayer({ id }) {
     <>
       <div className="video-player">
         <div className="video-player-header">
-          <DashPlayer src={buildFullURL("/video/get_video_file/" + id + "/output.mpd")} />
+          <video data-dashjs-player controls src={buildFullURL("/video/get_video_file/" + id + "/output.mpd")} poster={buildFullURL("/video/thumbnail_image?v=" + id)}/>
           <p className="video-player-author">{author}</p>
           <p className="video-player-title">{title}</p>
         </div>

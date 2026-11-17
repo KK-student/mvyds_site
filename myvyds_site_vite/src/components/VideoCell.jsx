@@ -24,11 +24,11 @@ export default function VideoCell({id}) {
   }
   return (
     <>
-      <div className="video_cell">
+      <a href={"/watch.html?v=" + id} className="video_cell">
         <img src={buildFullURL("/video/thumbnail_image?v=" + id)} alt={"Thumbnail image for the video titled \"" + title + "\""} />
         <p className="video_cell_title">{title}</p>
         <p className="video_cell_description">{description}</p>
-      </div>
+      </a>
     </>
   );
 }

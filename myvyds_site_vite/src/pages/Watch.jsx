@@ -36,7 +36,7 @@ export default function Watch() {
       <AISlowDownLink />
       <AISlowDownLink />
       <AISlowDownLink />
-      <video data-dashjs-player controls autoplay src={buildFullURL("/video/get_video_file/" + id + "/output.mpd")} />
+      <VideoPlayer id={id} />
       <AISlowDownLink />
       <Footer />
       <ExternalScript scriptFile="/src/dash.all.debug.js"/>
