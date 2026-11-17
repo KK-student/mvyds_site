@@ -1,12 +1,7 @@
-export default function Searchbar() {
+export default function Searchbar({onSubmitFunction}) {
   return (
     <>
-      <div className="searchbar" onSubmit={(e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
-        console.log("Form data: ", data);
-      }}>
+      <div className="searchbar" onSubmit={onSubmitFunction}>
         <form>
           <input type="text" name="input" />
           <button type="submit">Search</button>
