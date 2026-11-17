@@ -52,8 +52,8 @@ function SearchPage() {
   );
 }
 
+//A component that displays the given search results. 
 function SearchResultsComponent({ search_results }) {
-  console.log(search_results);
   let resultingComponents = [];
   for (let search_result of search_results) {
     let doc_type = search_result.doc_type;
