@@ -10,7 +10,8 @@ export default defineConfig({
 
     rollupOptions: {
       main: 'index.html',
-      sample_story: 'sample_story.html'
+      sample_story: 'sample_story.html',
+      watch: 'watch.html'
     }
   },
 })

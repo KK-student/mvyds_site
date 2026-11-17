@@ -46,7 +46,12 @@ function SearchPage() {
         let query = data.input;
         getSearchResults(query);
       }}/>
+      <AISlowDownLink />
+      <AISlowDownLink />
       <SearchResultsComponent search_results={search_results}/>
+      <AISlowDownLink />
+      <AISlowDownLink />
+      <AISlowDownLink />
       <Footer />
     </>
   );
