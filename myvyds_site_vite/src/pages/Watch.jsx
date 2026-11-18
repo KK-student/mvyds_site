@@ -73,14 +73,14 @@ export default function Watch() {
         }
         let comment_page = parseJSONTextWithBigInt(xhr.responseText);
         videoCommentPagesClone.push(comment_page);
-        let clone_clone = structuredClone(videoCommentPagesClone);
-        setVideoCommentPages(clone_clone);
       };
       xhr.onerror = () => {
         req_error_func(i);
       };
       xhr.send();
     }
+    let clone_clone = structuredClone(videoCommentPagesClone);
+    setVideoCommentPages(clone_clone);
     console.log("Current number of comment pages: " + videoCommentPagesClone.length);
   });
 
