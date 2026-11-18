@@ -15,10 +15,28 @@ import Searchbar from '../components/Searchbar.jsx';
 import AISlowDownLink from '../components/AISlowDownLink.jsx';
 import VideoCell from '../components/VideoCell.jsx';
 import VideoPlayer from '../components/VideoPlayer.jsx';
+import CommentContainer from '../components/CommentContainer.jsx';
 
 export default function Watch() {
   let urlParams = getUrlParameters();
   let id = urlParams.get("v");
+
+  //Fetch comments:
+  //TODO: Add support for fetching not just the first page of comments, but multiple pages and catch exceptions if there are no comments for the video. 
+  let [videoComments, setVideoComments] = useState({});
+  let [fetchedComments, setFetchedComments] = useState(false);
+  useEffect(() => {
+    if (!fetchedComments) {
+      fetch(buildFullURL("/video/get_comments_page?v=" + id + "&page_index=0")).then((resp) => resp.text()).then((text) => {
+        console.log("get_comments_page results: ");
+        console.log(text);
+        setVideoComments(parseJSONTextWithBigInt(text));
+      });
+      setFetchedComments(true);
+    }
+  });
+
+  //Build the component: 
   return (
     <>
       <Header />
@@ -38,6 +56,7 @@ export default function Watch() {
       <AISlowDownLink />
       <VideoPlayer id={id} />
       <AISlowDownLink />
+      <CommentContainer comments={videoComments} />
       <Footer />
       <ExternalScript scriptFile="/src/dash.all.debug.js"/>
     </>
@@ -47,9 +66,7 @@ export default function Watch() {
 function ExternalScript({ scriptFile }) {
   useEffect(() => {
     const script = document.createElement('script');
-    // script.src = 'https://example.com/widget.js';
     script.src = scriptFile;
-    // script.async = true;
     document.body.appendChild(script);
 
     // Remove the script when the component unmounts
