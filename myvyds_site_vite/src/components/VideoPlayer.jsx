@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-// import { DashVideo } from '@videojs/react/media/dash-video';
-// import { DashVideo } from '@videojs/dash-video';
-// import dashjs from 'dashjs';
-// import { MediaPlayer } from 'dashjs';
-// import { dashjs } from '../dash.all.debug.js';
+import * as shaka from 'shaka-player/dist/shaka-player.ui.js';
+import 'shaka-player/dist/controls.css';
 
 import VideoCell from './VideoCell.jsx';
+
+import BodiedScriptTag from './ScriptTag.jsx';
 
 import { parseJSONTextWithBigInt, buildFullURL } from '../misc_functions.js';
 
@@ -34,13 +33,16 @@ export default function VideoPlayer({ id }) {
     title = videoBasicInfo.name;
     description = videoBasicInfo.description;
     author = videoBasicInfo.author;
-  } 
+  }
+
+  const video_source = buildFullURL("/video/get_video_file/" + id + "/output.mpd");
   //Build the component: 
   return (
     <>
       <div className="video-player">
         <div className="video-player-header">
-          <video data-dashjs-player controls src={buildFullURL("/video/get_video_file/" + id + "/output.mpd")} poster={buildFullURL("/video/thumbnail_image?v=" + id)}/>
+          {/* <video id="video-player-tag" data-dashjs-player controls src={video_source} poster={buildFullURL("/video/thumbnail_image?v=" + id)}/> */}
+          <ShakaPlayer src={video_source} thumbnail_image={buildFullURL("/video/thumbnail_image?v=" + id)} />
           <p className="video-player-author">{author}</p>
           <p className="video-player-title">{title}</p>
         </div>
@@ -50,30 +52,70 @@ export default function VideoPlayer({ id }) {
   );
 }
 
-function DashPlayer({ src, autoPlay = false, controls = true, ...rest }) {
-  const videoRef = useRef(null);
-  const playerRef = useRef(null);
+function ShakaPlayer({ src, thumbnail_image }) {
+  let player_script = `
+const manifestUri = \"${src}\";
 
-  useEffect(() => {
-    const player = dashjs.MediaPlayer().create();
-    playerRef.current = player;
+function initApp() {
+  // Install built-in polyfills to patch browser incompatibilities.
+  shaka.polyfill.installAll();
 
-    player.initialize(videoRef.current, src, autoPlay);
+  // Check to see if the browser supports the basic APIs Shaka needs.
+  if (shaka.Player.isBrowserSupported()) {
+    // Everything looks good!
+    initPlayer();
+  } else {
+    // This browser does not have the minimum set of APIs we need.
+    console.error('Browser not supported!');
+  }
+}
 
-    // Clean up when the source changes or the component unmounts
-    return () => {
-      player.reset();
-      playerRef.current = null;
-    };
-  }, [src, autoPlay]);
+async function initPlayer() {
+  // Create a Player instance.
+  const video = document.getElementById('shaka-video-player');
+  const container = document.getElementById('video-container');
 
+  const player = new shaka.Player();
+  const ui = new shaka.ui.Overlay(player, container, video);
+  await player.attach(video);
+
+  // Attach player to the window to make it easy to access in the JS console.
+  window.player = player;
+
+  // Listen for error events.
+  player.addEventListener('error', onErrorEvent);
+
+  // Try to load a manifest.
+  // This is an asynchronous process.
+  try {
+    await player.load(manifestUri);
+    // This runs if the asynchronous load is successful.
+    console.log('The video has now been loaded!');
+  } catch (e) {
+    // onError is executed if the asynchronous load fails.
+    onError(e);
+  }
+}
+
+function onErrorEvent(event) {
+  // Extract the shaka.util.Error object from the event.
+  onError(event.detail);
+}
+
+function onError(error) {
+  // Log the error.
+  console.error('Error code', error.code, 'object', error);
+}
+
+initApp();
+`;
   return (
-    <video
-      ref={videoRef}
-      controls={controls}
-      style={{ width: '100%', maxWidth: '960px' }}
-      {...rest}
-    />
+    <>
+      <div id="video-container">
+        <video id="shaka-video-player" poster={thumbnail_image} />
+      </div>
+      <BodiedScriptTag scriptText={player_script} />
+    </>
   );
 }
 

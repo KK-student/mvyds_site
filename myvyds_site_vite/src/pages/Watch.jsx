@@ -58,7 +58,6 @@ export default function Watch() {
       <AISlowDownLink />
       <CommentContainer comments={videoComments} />
       <Footer />
-      <ExternalScript scriptFile="/src/dash.all.debug.js"/>
     </>
   );
 }
