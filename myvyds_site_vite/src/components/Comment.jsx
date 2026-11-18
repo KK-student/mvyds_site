@@ -2,10 +2,17 @@ import { useState } from 'react';
 
 import CommentContainer from './CommentContainer.jsx';
 
-import { buildFullURL } from '../misc_functions.js';
+import { buildFullURL, isEmptyObject } from '../misc_functions.js';
 
 export default function Comment({ author, text, creation_time, replies }) {
   let [showReplies, setShowReplies] = useState(false);
+
+  let replies_button = <button className="show-hide-replies-button" type="button" onClick={(e) => {
+    e.preventDefault();
+    setShowReplies(!showReplies);
+  }}>
+    {!showReplies ? "Show replies" : "Hide replies"}
+  </button>;
 
   return (
     <>
@@ -17,10 +24,7 @@ export default function Comment({ author, text, creation_time, replies }) {
             <p className="comment-text">{text}</p>
           </div>
         </div>
-        <button className="show-hide-replies-button" type="button" onClick={(e) => {
-          e.preventDefault();
-          setShowReplies(!showReplies);
-        }}>{!showReplies ? "Show replies" : "Hide replies"}</button>
+        { !isEmptyObject(replies) ? replies_button : null }
         <CommentContainer comments={showReplies ? replies : {}} />
       </div>
     </>

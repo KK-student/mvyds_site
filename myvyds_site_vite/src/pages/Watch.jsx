@@ -18,14 +18,31 @@ import VideoPlayer from '../components/VideoPlayer.jsx';
 import CommentContainer from '../components/CommentContainer.jsx';
 
 function get_all_comments_from_pages(comment_pages) {
-    let result = {};
-    for (let page of comment_pages) {
-      for (let comment_id of Object.keys(page)) {
-        result[comment_id] = page[comment_id];
-      }
+  let result = {};
+  for (let page of comment_pages) {
+    for (let comment_id of Object.keys(page)) {
+      result[comment_id] = page[comment_id];
     }
+  }
 
-    return result;
+  return result;
+}
+
+function exists_more_comments(comment_pages, video_id) {
+  let result = true;
+  let xhr = new XMLHttpRequest();
+  let comment_page_url = buildFullURL("/video/get_comments_page?v=" + video_id + "&page_index=" + comment_pages.length);
+  xhr.open("GET", comment_page_url, false);
+  xhr.onload = () => {
+    if (!(xhr.status >= 200 && xhr.status < 300)) {
+      result = false;
+    }
+  };
+  xhr.onerror = () => {
+    result = false;
+  };
+  xhr.send();
+  return result;
 }
 
 export default function Watch() {
@@ -33,13 +50,12 @@ export default function Watch() {
   let id = urlParams.get("v");
 
   //Fetch comments:
-  //TODO: Add support for fetching not just the first page of comments, but multiple pages and catch exceptions if there are no comments for the video. 
   let [videoCommentPages, setVideoCommentPages] = useState([]);
   let [wantedNumCommPages, setWantedNumCommPages] = useState(1);
-  useEffect(() => {
+  setTimeout(() => {
     if (videoCommentPages.length >= wantedNumCommPages) {
       return;
-    }
+    } 
     let videoCommentPagesClone = structuredClone(videoCommentPages);
     let more_available = true;
     let req_error_func = (i) => {
@@ -48,15 +64,6 @@ export default function Watch() {
     };
     for (let i = videoCommentPagesClone.length; more_available && videoCommentPagesClone.length < wantedNumCommPages; i++) {
       let comment_page_url = buildFullURL("/video/get_comments_page?v=" + id + "&page_index=" + i);
-      // fetch(comment_page_url).then((resp) => resp.text()).then((text) => {
-      //   console.log("get_comments_page results: ");
-      //   console.log(text);
-      //   let comment_page = parseJSONTextWithBigInt(text);
-      //   videoComments.add_page(comment_page);
-      // }).catch(() => {
-      //     more_available = false;
-      //     setWantedNumCommPages(i);
-      //   }); 
       let xhr = new XMLHttpRequest();
       xhr.open("GET", comment_page_url, false);
       xhr.onload = () => {
@@ -75,8 +82,9 @@ export default function Watch() {
       xhr.send();
     }
     console.log("Current number of comment pages: " + videoCommentPagesClone.length);
-    // }
-  }, []);
+  });
+
+  let has_more_comments = exists_more_comments(videoCommentPages, id);
 
   //Build the component: 
   return (
@@ -99,6 +107,11 @@ export default function Watch() {
       <VideoPlayer id={id} />
       <AISlowDownLink />
       <CommentContainer comments={get_all_comments_from_pages(videoCommentPages)} />
+      { has_more_comments ? <button type="button" className="get-more-comments-button" onClick={(e) => {
+        e.preventDefault();
+        console.log("Getting more comments");
+        setWantedNumCommPages(wantedNumCommPages + 1);
+      }} >More comments</button> : null }
       <Footer />
     </>
   );

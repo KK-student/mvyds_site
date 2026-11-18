@@ -45,3 +45,41 @@ export function getUrlParameters() {
   const queryString = window.location.search;
   return new URLSearchParams(queryString);
 }
+
+// Source - https://stackoverflow.com/a/32108184
+// Posted by Adam Zerner, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-11-18, License - CC BY-SA 4.0
+function isEmpty(obj) {
+  for (const prop in obj) {
+    if (Object.hasOwn(obj, prop)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// Source - https://stackoverflow.com/a/32108184
+// Posted by Adam Zerner, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-11-18, License - CC BY-SA 4.0
+export function isEmptyObject(value) {
+  if (value == null) {
+    // null or undefined
+    return false;
+  }
+
+  if (typeof value !== 'object') {
+    // boolean, number, string, function, etc.
+    return false;
+  }
+
+  const proto = Object.getPrototypeOf(value);
+
+  // consider `Object.create(null)`, commonly used as a safe map
+  // before `Map` support, an empty object as well as `{}`
+  if (proto !== null && proto !== Object.prototype) {
+    return false;
+  }
+
+  return isEmpty(value);
+}
