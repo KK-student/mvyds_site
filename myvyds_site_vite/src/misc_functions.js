@@ -3,12 +3,10 @@ function fetchServerConfigJson() {
   let xhr = new XMLHttpRequest();
   xhr.open("GET", "/server_config.json", false);
   xhr.onload = () => {
-    console.log("Data received!");
     let json_data = JSON.parse(xhr.responseText);
     result = json_data;
   };
   xhr.send();
-  console.log(result);
 
   return result;
 }
