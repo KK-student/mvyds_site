@@ -11,7 +11,8 @@ export default defineConfig({
     rollupOptions: {
       main: 'index.html',
       sample_story: 'sample_story.html',
-      watch: 'watch.html'
+      watch: 'watch.html',
+      login: 'login.html',
     }
   },
   optimizeDeps: {

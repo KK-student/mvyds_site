@@ -83,3 +83,77 @@ export function isEmptyObject(value) {
 
   return isEmpty(value);
 }
+
+
+//Gets all of the current accessible cookies. 
+export function getCookies() {
+  let result = {};
+  for (let cookie_pair_string of document.cookie.split("; ")) {
+    let cookie_pair = cookie_pair_string.split("=");
+    let cookie_name = decodeURIComponent(cookie_pair[0]);
+    let cookie_value = decodeURIComponent(cookie_pair[1]);
+    result[cookie_name] = cookie_value;
+  }
+  return result;
+}
+
+// returns the cookie with the given name,
+// or undefined if not found
+// From: javascript.info. 
+export function getCookie(name) {
+  let matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
+// Sets a cookie with the given name to the given value with path=/ by default. 
+// From: javascript.info. 
+export function setCookie(name, value, attributes = {}, cookie_path = "/") {
+
+  attributes = {
+    path: cookie_path,
+    // add other defaults here if necessary
+    ...attributes
+  };
+
+  if (attributes.expires instanceof Date) {
+    attributes.expires = attributes.expires.toUTCString();
+  }
+
+  let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+
+  for (let attributeKey in attributes) {
+    updatedCookie += "; " + attributeKey;
+    let attributeValue = attributes[attributeKey];
+    if (attributeValue !== true) {
+      updatedCookie += "=" + attributeValue;
+    }
+  }
+
+  document.cookie = updatedCookie;
+}
+
+// Source - https://stackoverflow.com/a/179514
+// Posted by Robert J. Walker, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-11-19, License - CC BY-SA 4.0
+// Deletes all currently accessible cookies. 
+export function deleteAllCookies() {
+    document.cookie.split(';').forEach(cookie => {
+        const eqPos = cookie.indexOf('=');
+        const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    });
+}
+
+// Sets a cookie with the given name to the given value with the following attributes: secure (if setSecureFlag == true), expires (default value: 2h from now), path (default value: "/"), and samesite = "strict". 
+export function setSecureCookie(cookie_name, cookie_value, setSecureFlag = true, time_length = 60 * 60 * 1000, path = "/") {
+  let attributes = {};
+  if (setSecureFlag) {
+    attributes.secure = true;
+  }
+  attributes.expires = new Date(Date.now() + time_length);
+  attributes.samesite = "strict";
+  setCookie(cookie_name, cookie_value, attributes, path);
+}
+
