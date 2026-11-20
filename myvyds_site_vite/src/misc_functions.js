@@ -35,7 +35,8 @@ export function buildFullURL(endpoint) {
 export function parseJSONTextWithBigInt(text) {
   return JSON.parse(text, (key, value, context) => {
     if (typeof value === 'number' && Number.isInteger(value) && !Number.isSafeInteger(value)) {
-      return BigInt(context.source);
+      let bi = BigInt(context.source);
+      return BigInt.asUintN(64, bi);
     }
     return value;
   });
@@ -155,5 +156,23 @@ export function setSecureCookie(cookie_name, cookie_value, setSecureFlag = true,
   attributes.expires = new Date(Date.now() + time_length);
   attributes.samesite = "strict";
   setCookie(cookie_name, cookie_value, attributes, path);
+}
+
+export function setUsername(username) {
+  setSecureCookie("username", username);
+}
+
+export function getUsername() {
+  getCookie("username");
+}
+
+export function setSessionId(session_id) {
+  let session_id_conv = BigInt.asUintN(64, session_id);
+  setSecureCookie("session_id", `${session_id_conv}`);
+}
+
+export function getSessionId() {
+  let bi = BigInt(getCookie("session_id"));
+  return BigInt.asUintN(64, bi);
 }
 
