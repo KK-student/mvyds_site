@@ -7,7 +7,10 @@ export default function Header() {
         <div className="project_title_div"><h1 className="project_title">Myvyds</h1></div>
         <div className="account_actions">
           <button type="submit" className="settings_button">Settings</button>
-          <button type="submit" className="login_button">Log in</button>
+          <button type="submit" className="login_button" onClick={(e) => {
+            e.preventDefault();
+            window.location.href = "/login.html";
+          }}>Log in</button>
         </div>
       </div>
     </>

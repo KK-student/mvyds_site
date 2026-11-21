@@ -7,7 +7,7 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-import { setSecureCookie, getCookies, getCookie, deleteAllCookies, buildFullURL, setUsername, setSessionId } from '../misc_functions.js';
+import { setSecureCookie, getCookies, getCookie, deleteAllCookies, buildFullURL, setUsername, setSessionId, isLoggedInMyvyds } from '../misc_functions.js';
 
 import Header from '../components/Header.jsx';
 import Footer from '../components/Footer.jsx';
@@ -16,7 +16,7 @@ import AISlowDownLink from '../components/AISlowDownLink.jsx';
 export default function Login() {
   let [loginState, setLoginState] = useState(0);
   let loginStateIndicator;
-  if (loginState == 1) {
+  if (loginState == 1 || isLoggedInMyvyds()) {
     window.location.href = "/index.html";
   } else if (loginState == 2) {
     loginStateIndicator = <p id="login-failed-message">Invalid username or password!</p>;

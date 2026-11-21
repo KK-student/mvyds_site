@@ -163,7 +163,7 @@ export function setUsername(username) {
 }
 
 export function getUsername() {
-  getCookie("username");
+  return getCookie("username");
 }
 
 export function setSessionId(session_id) {
