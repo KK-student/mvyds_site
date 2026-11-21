@@ -148,7 +148,7 @@ export function deleteAllCookies() {
 }
 
 // Sets a cookie with the given name to the given value with the following attributes: secure (if setSecureFlag == true), expires (default value: 2h from now), path (default value: "/"), and samesite = "strict". 
-export function setSecureCookie(cookie_name, cookie_value, setSecureFlag = true, time_length = 60 * 60 * 1000, path = "/") {
+export function setSecureCookie(cookie_name, cookie_value, setSecureFlag = true, time_length = 2 * 60 * 60 * 1000, path = "/") {
   let attributes = {};
   if (setSecureFlag) {
     attributes.secure = true;
@@ -174,5 +174,30 @@ export function setSessionId(session_id) {
 export function getSessionId() {
   let bi = BigInt(getCookie("session_id"));
   return BigInt.asUintN(64, bi);
+}
+
+export function isLoggedIn(check_login_function) {
+  const username = getUsername();
+  const session_id_string = getCookie("session_id");
+  if (username == "" || session_id_string == "") {
+    return false;
+  }
+  return check_login_function(username, getSessionId());
+}
+
+export function isLoggedInMyvyds() {
+  return isLoggedIn((username, session_id) => {
+    let result;
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", buildFullURL("/user/is_logged_in"), false);
+    xhr.onload = () => {
+      result = xhr.responseText.charCodeAt(xhr.responseText.length - 1) == 1;
+    };
+    let form = new FormData();
+    form.append("username", username);
+    form.append("session_id", session_id);
+    xhr.send(form);
+    return result;
+  });
 }
 
