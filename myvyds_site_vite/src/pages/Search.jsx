@@ -21,6 +21,10 @@ import { CommentById } from '../components/Comment.jsx';
 function SearchPage() {
   let [search_results, setSearchResults] = useState([]);
   let getSearchResults = async (query) => {
+    if (query.length == 0) {
+      setSearchResults([]);
+      return;
+    }
     //Make a search in the database and set the search results. 
     let resp = await fetch(buildFullURL("/search?query=" + encodeURIComponent(query)));
     let r_text = await resp.text();
