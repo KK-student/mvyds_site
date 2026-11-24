@@ -14,6 +14,8 @@ import Footer from '../components/Footer.jsx';
 import Searchbar from '../components/Searchbar.jsx';
 import AISlowDownLink from '../components/AISlowDownLink.jsx';
 import VideoCell from '../components/VideoCell.jsx';
+import User from '../components/User.jsx';
+import { CommentById } from '../components/Comment.jsx';
 
 //A search page. 
 function SearchPage() {
@@ -60,11 +62,19 @@ function SearchPage() {
 //A component that displays the given search results. 
 function SearchResultsComponent({ search_results }) {
   let resultingComponents = [];
+  console.log("Search results: ");
+  console.log(search_results);
   for (let search_result of search_results) {
     let doc_type = search_result.doc_type;
     let id = search_result.id;
     if (doc_type == 0) {
       resultingComponents.push(<VideoCell key={id} id={id} />);
+    } else if (doc_type == 2) {
+      //Item is a comment.
+      console.log(`Got comment_id: ${id}`);
+      resultingComponents.push(<CommentById key={id} comment_id={id} />);
+    } else if (doc_type == 1) {
+      resultingComponents.push(<User key={id} user_id={id} />);
     }
   }
   return (
