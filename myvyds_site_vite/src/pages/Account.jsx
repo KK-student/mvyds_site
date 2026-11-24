@@ -14,6 +14,7 @@ import AISlowDownLink from '../components/AISlowDownLink.jsx';
 import VideoCell from '../components/VideoCell.jsx';
 import User from '../components/User.jsx';
 import { CommentById } from '../components/Comment.jsx';
+import AccountPageHeader from '../components/AccountPageHeader.jsx';
 
 import { buildFullURL, getUrlParameters, isEmptyObject, parseJSONTextWithBigInt } from '../misc_functions.js';
 
@@ -38,9 +39,19 @@ function Account() {
     user_id = "USER NOT FOUND";
     //TODO: Redirect to 404 page. 
   }
+
+  let user_id_encoded = encodeURIComponent(user_id);
+  let [user_data, setUserData] = useState({});
+  let is_user_data_set = !isEmptyObject(user_data);
+  if (!is_user_data_set) {
+    fetch(buildFullURL(`/user/get_public_info?user_id=${user_id_encoded}`))
+      .then((resp) => resp.text())
+      .then((text) => setUserData(parseJSONTextWithBigInt(text)));
+  }
+
   return (
     <>
-      <AccountPageHeader user_id={user_id} />
+      <AccountPageHeader user_id={user_id} user_data={user_data} />
       <AISlowDownLink />
       <AISlowDownLink />
       <AISlowDownLink />
@@ -49,61 +60,6 @@ function Account() {
       <AISlowDownLink />
       <AISlowDownLink />
       <Footer />
-    </>
-  );
-}
-
-export function AccountPageHeader({ user_id }) {
-  let [user_data, setUserData] = useState({});
-  let is_user_data_set = !isEmptyObject(user_data);
-  let loading_text = "Loading...";
-  let user_id_encoded = encodeURIComponent(user_id);
-
-  if (!is_user_data_set) {
-    fetch(buildFullURL(`/user/get_public_info?user_id=${user_id_encoded}`))
-      .then((resp) => resp.text())
-      .then((text) => {
-        console.log("Received data: ");
-        console.log(text);
-        setUserData(parseJSONTextWithBigInt(text))
-      });
-  }
-
-  let description;
-  let time_created;
-  if (is_user_data_set) {
-    description = user_data.description;
-    time_created = new Date(user_data.time_created * 1000);
-  } else {
-    description = loading_text;
-    time_created = new Date(0);
-  }
-  return (
-    <>
-      <Header />
-      <AISlowDownLink />
-      <AISlowDownLink />
-      <AISlowDownLink />
-      <AISlowDownLink />
-      <AISlowDownLink />
-      <Searchbar onSubmitFunction={(e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
-        let query = data.input;
-        window.location.href = "/search.html?query=" + encodeURIComponent(query);
-      }}/>
-      <img src={buildFullURL("/user/get_user_icon?user_id=" + encodeURIComponent(user_id))} alt={`Channel background image for ${user_id}`} /> {/*TODO: Change this to the user's channel background image!*/}
-      <div className="header-line" />
-      <User user_id={user_id} />
-      <h2>Description: </h2>
-      <p>{description}</p>
-      <p>Time created: {time_created.toString()}</p>
-      <div className="account-page-nav-links">
-        <a href={"/account/videos.html?user_id=" + user_id_encoded}>Videos</a>
-        <a href={"/account/comments.html?user_id=" + user_id_encoded}>Comments</a>
-        <a href={"/account/playlists.html?user_id=" + user_id_encoded}>Playlists</a>
-      </div>
     </>
   );
 }

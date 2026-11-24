@@ -14,6 +14,7 @@ export default defineConfig({
       watch: 'watch.html',
       login: 'login.html',
       account: 'account.html',
+      account_videos: './account/videos.html',
     }
   },
   optimizeDeps: {
