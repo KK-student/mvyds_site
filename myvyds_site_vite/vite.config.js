@@ -13,6 +13,7 @@ export default defineConfig({
       sample_story: 'sample_story.html',
       watch: 'watch.html',
       login: 'login.html',
+      account: 'account.html',
     }
   },
   optimizeDeps: {
