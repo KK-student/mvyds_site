@@ -20,7 +20,7 @@ export default function User({ user_id }) {
     <>
       <div className="user-container">
         <img src={buildFullURL(`/user/get_user_icon?user_id=${user_id_encoded}`)} />
-        <p>{user_id_encoded}</p>
+        <p>{user_id}</p>
       </div>
     </>
   );
