@@ -15,6 +15,7 @@ export default defineConfig({
       login: 'login.html',
       account: 'account.html',
       account_videos: './account/videos.html',
+      account_comments: './account/comments.html',
     }
   },
   optimizeDeps: {

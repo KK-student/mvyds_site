@@ -33,9 +33,6 @@ function AccountVideos() {
       .then((text) => setUserData(parseJSONTextWithBigInt(text)));
   }
 
-  console.log("user_data: ");
-  console.log(user_data);
-
   let video_cells = [];
   if (is_user_data_set) {
     for (let video_id of user_data.videos) {
